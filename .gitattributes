@@ -1,0 +1,13 @@
+*       text=auto   eol=lf
+
+*.ase       binary
+*.aseprite  binary
+*.dll       binary
+*.png       binary
+*.jpeg      binary
+*.jpg       binary
+*.aup3      binary
+*.wav       binary
+*.mp3       binary
+*.ttf       binary
+*.otf       binary

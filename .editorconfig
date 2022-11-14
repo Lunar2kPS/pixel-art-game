@@ -1,0 +1,12 @@
+# To learn more about .editorconfig see https://aka.ms/editorconfigdocs
+
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+# TODO: Why are we not using regexes......
+[*.{yml, yaml}]
+indent_style = space
+indent_size = 2
