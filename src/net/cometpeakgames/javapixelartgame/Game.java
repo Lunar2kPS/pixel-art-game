@@ -71,6 +71,7 @@ public class Game extends Canvas implements Runnable {
             int updateCountNeeded = (int) (nanoTimeElapsed / minNanoFrametime);
             if (updateCountNeeded > 0) {
                 float dt = (float) ((double) nanoTimeElapsed / 1000000000 / updateCountNeeded);
+                //NOTE: https://www.javatpoint.com/java-string-format
                 System.out.println("dt = " + String.format("%.3f", dt));
                 
                 for (int i = 0; i < updateCountNeeded; i++) {
