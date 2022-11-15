@@ -95,7 +95,7 @@ public class Game extends Canvas implements Runnable {
     }
 
     private void update() {
-
+        screen.update();
     }
 
     private void render() {
