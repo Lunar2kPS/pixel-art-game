@@ -11,6 +11,8 @@ import java.awt.image.DataBufferInt;
 import javax.swing.JFrame;
 
 import net.cometpeakgames.javapixelartgame.graphics.Screen;
+import net.cometpeakgames.javapixelartgame.input.Keyboard;
+import net.cometpeakgames.javapixelartgame.util.MathUtility;
 
 public class Game extends Canvas implements Runnable {
     private static int width = 400;
@@ -24,9 +26,9 @@ public class Game extends Canvas implements Runnable {
 
     private JFrame frame;
     private Screen screen;
-
     private BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
     private int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+    private Keyboard keyboard;
 
     public int getScreenWidth() { return width * scale; }
     public int getScreenHeight() { return height * scale; }
@@ -36,9 +38,11 @@ public class Game extends Canvas implements Runnable {
 
     public synchronized void start() {
         isRunning = true;
-        screen = new Screen(width, height);
+        keyboard = new Keyboard();
+        screen = new Screen(width, height, keyboard);
         frame = CreateFrame();
-        
+        addKeyListener(keyboard);
+
         gameThread = new Thread(this, "Game");
         gameThread.start();
     }
@@ -71,9 +75,7 @@ public class Game extends Canvas implements Runnable {
             int updateCountNeeded = (int) (nanoTimeElapsed / minNanoFrametime);
             if (updateCountNeeded > 0) {
                 float dt = (float) ((double) nanoTimeElapsed / 1000000000 / updateCountNeeded);
-                //NOTE: https://www.javatpoint.com/java-string-format
-                System.out.println("dt = " + String.format("%.3f", dt));
-                
+
                 for (int i = 0; i < updateCountNeeded; i++) {
                     update();
                     updatesPassed++;
