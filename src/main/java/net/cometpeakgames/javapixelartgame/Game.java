@@ -141,6 +141,6 @@ public class Game extends Canvas implements Runnable {
         Game game = new Game();
         game.start();
 
-        ObjectMapper
+        // ObjectMapper
     }
 }
