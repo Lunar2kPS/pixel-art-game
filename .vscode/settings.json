@@ -1,4 +1,6 @@
 {
+    "java.jdt.ls.java.home": "C:/Program Files/Java/jdk-17.0.4.1",
+    "maven.terminal.useJavaHome": true,
     "java.project.sourcePaths": [
         "src"
     ],
@@ -12,5 +14,6 @@
         "jdk.*",
         "org.graalvm.*",
         "io.micrometer.shaded.*"
-    ]
+    ],
+    "java.configuration.updateBuildConfiguration": "automatic"
 }

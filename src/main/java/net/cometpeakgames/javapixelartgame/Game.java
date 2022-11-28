@@ -10,8 +10,7 @@ import java.awt.image.DataBufferInt;
 
 import javax.swing.JFrame;
 
-// import com.fasterxml.jackson.databind.ObjectMapper;
-
+import net.cometpeakgames.javapixelartgame.assets.JsonTesting;
 import net.cometpeakgames.javapixelartgame.graphics.Screen;
 import net.cometpeakgames.javapixelartgame.input.Keyboard;
 import net.cometpeakgames.javapixelartgame.util.MathUtility;
@@ -141,6 +140,6 @@ public class Game extends Canvas implements Runnable {
         Game game = new Game();
         game.start();
 
-        ObjectMapper
+        JsonTesting.Test();
     }
 }

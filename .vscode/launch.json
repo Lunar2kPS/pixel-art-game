@@ -15,8 +15,7 @@
             "name": "Launch Game",
             "request": "launch",
             "mainClass": "net.cometpeakgames.javapixelartgame.Game",
-            "projectName": "java-pixel-art-game_1b12d152",
-            "vmArgs": "-enableassertions"
+            "projectName": "javapixelartgame"
         }
     ]
 }
