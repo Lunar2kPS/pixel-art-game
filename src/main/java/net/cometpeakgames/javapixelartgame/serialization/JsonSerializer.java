@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+//NOTE: Custom deserializers on a per-type basis: https://andrewtarry.com/posts/deserialising-an-interface-with-jackson/
 public class JsonSerializer implements ITextSerializer {
     private ObjectMapper objectMapper;
     private ObjectWriter objectWriter;
@@ -19,6 +20,7 @@ public class JsonSerializer implements ITextSerializer {
         try {
             return objectWriter.writeValueAsString(object);
         } catch (JsonProcessingException e) {
+            e.printStackTrace();
             throw new SerializationException();
         }
     }

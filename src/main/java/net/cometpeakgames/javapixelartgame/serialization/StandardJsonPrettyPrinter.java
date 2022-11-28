@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 
 class StandardJSONPrettyPrinter extends MinimalPrettyPrinter {
-    private final int tabSize = 2;
+    private final int tabSize = 4;
     private int indentLevel = 0;
     
     @Override
