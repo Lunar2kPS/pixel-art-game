@@ -14,12 +14,12 @@ public class JsonTesting {
         System.out.println("\n\n--- --- JSON TESTING --- ---\n\n");
         ITextSerializer serializer = new JsonSerializer();
 
-        try {
-            GameAsset test = new GameAsset();
-            System.out.println(serializer.serialize(test));
-        } catch (SerializationException e) {
-            e.printStackTrace();
-        }
+        // try {
+        //     GameAsset test = new GameAsset();
+        //     System.out.println(serializer.serialize(test));
+        // } catch (SerializationException e) {
+        //     e.printStackTrace();
+        // }
 
         try {
             Class c = Class.forName("net.cometpeakgames.javapixelartgame.assets.GameAsset");
@@ -28,7 +28,7 @@ public class JsonTesting {
             e.printStackTrace();
         }
 
-        String currentFolder = Paths.get(".").normalize().toAbsolutePath().toString().replace('\\', '/');
+        
         try {
             String jsonTest = Files.readString(Paths.get("./resources/spritesheets/Terrain Tiles.json"));
             System.out.println(jsonTest);
@@ -36,8 +36,6 @@ public class JsonTesting {
             e.printStackTrace();
         }
         
-        System.out.println("currentFolder = " + currentFolder);
-
         String json = "{\"name\":\"Carlos\"}";
         ExampleClass obj = new ExampleClass();
         

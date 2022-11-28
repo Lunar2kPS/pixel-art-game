@@ -10,6 +10,7 @@ import java.awt.image.DataBufferInt;
 
 import javax.swing.JFrame;
 
+import net.cometpeakgames.javapixelartgame.assets.GameAsset;
 import net.cometpeakgames.javapixelartgame.assets.JsonTesting;
 import net.cometpeakgames.javapixelartgame.graphics.Screen;
 import net.cometpeakgames.javapixelartgame.input.Keyboard;
@@ -57,6 +58,7 @@ public class Game extends Canvas implements Runnable {
         }
     }
 
+    @Override
     public void run() {
         long prevTime = System.nanoTime();
         int maxFramerate = 60;
@@ -137,9 +139,10 @@ public class Game extends Canvas implements Runnable {
     }
 
     public static void main(String[] args) {
+        Application.Initialize();
+        GameAssetDatabase.Initialize();
+
         Game game = new Game();
         game.start();
-
-        JsonTesting.Test();
     }
 }

@@ -1,12 +1,22 @@
 package net.cometpeakgames.javapixelartgame.graphics;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 
-public class SpriteSheet {
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import net.cometpeakgames.javapixelartgame.assets.GameAsset;
+
+@JsonSerialize
+public class SpriteSheet extends GameAsset {
     public static final int MAX_SIZE = 4096;
 
     public final String filePath;
@@ -15,7 +25,11 @@ public class SpriteSheet {
     
     private int[] pixels;
 
-    public SpriteSheet(String filePath, int width, int height) {
+    @JsonCreator
+    public SpriteSheet(
+        @JsonProperty("filePath") String filePath,
+        @JsonProperty("width") int width,
+        @JsonProperty("height") int height) {
         if (filePath == null || filePath.isBlank())
             throw new IllegalArgumentException("You must provide a non-null and non-blank value for the file path.");
         if (width <= 0 || width >= MAX_SIZE)
@@ -26,7 +40,6 @@ public class SpriteSheet {
         this.filePath = filePath;
         this.width = width;
         this.height = height;
-        System.out.println(getClass().getTypeName() + " created!");
 
         pixels = new int[width * height];
         load();
@@ -34,10 +47,11 @@ public class SpriteSheet {
 
     private void load() {
         try {
-            URL resourcePath = SpriteSheet.class.getResource(filePath);
-            System.out.println(resourcePath);
-            
-            BufferedImage image = ImageIO.read(resourcePath);
+            File file = new File(filePath);
+            if (!file.exists())
+                throw new FileNotFoundException("Unable to find file at " + filePath + "!");
+
+            BufferedImage image = ImageIO.read(file);
             int w = image.getWidth();
             int h = image.getHeight();
             image.getRGB(0, 0, w, h, pixels, 0, w);

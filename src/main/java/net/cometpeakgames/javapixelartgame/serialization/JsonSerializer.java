@@ -1,11 +1,15 @@
 package net.cometpeakgames.javapixelartgame.serialization;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+
+// import com.fasterxml.jackson.module.*;
 
 //NOTE: Custom deserializers on a per-type basis: https://andrewtarry.com/posts/deserialising-an-interface-with-jackson/
 public class JsonSerializer implements ITextSerializer {
@@ -31,6 +35,7 @@ public class JsonSerializer implements ITextSerializer {
         try {
             return (T) objectMapper.readValue(json, type);
         } catch (JsonProcessingException e) {
+            e.printStackTrace();
             throw new SerializationException();
         }
     }
@@ -41,7 +46,7 @@ public class JsonSerializer implements ITextSerializer {
             objectMapper.setSerializationInclusion(Include.NON_NULL);
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             objectMapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
-    
+            // objectMapper.registerModule(new ParameterNamesModule(JsonCreator.Mode.PROPERTIES))
             return true;
         }
         return false;
@@ -53,5 +58,17 @@ public class JsonSerializer implements ITextSerializer {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public String getClassName(String json) throws SerializationException {
+        createMapperIfNeeded();
+
+        try {
+            return objectMapper.readTree(json).path("className").asText();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new SerializationException();
+        }
     }
 }

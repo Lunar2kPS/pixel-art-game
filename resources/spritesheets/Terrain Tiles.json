@@ -1,6 +1,6 @@
 {
     "className": "net.cometpeakgames.javapixelartgame.graphics.SpriteSheet",
-    "filePath": "resources/Terrain Tiles.png",
+    "filePath": "resources/spritesheets/Terrain Tiles.png",
     "width": 128,
     "height": 128
 }

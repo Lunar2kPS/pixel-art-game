@@ -4,13 +4,21 @@ import java.io.Serializable;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-public class GameAsset implements Serializable {
+//TODO: Custom annotations to avoid exposing JSON-specific Jackson annotations:
+//https://bsideup.github.io/posts/custom_jackson_annotations/
+public abstract class GameAsset implements Serializable {
+    @JsonProperty private String className;
     @JsonProperty private String guid;
 
-    public GameAsset() {
+    public String getGuid() { return guid; }
+    
+    protected GameAsset() {
+        System.out.println("WARNING: GameAsset ctr created className and guid!");
+        className = getClass().getTypeName();
         guid = UUID.randomUUID().toString();
+    }
 
+    protected static void reate() {
     }
 }
