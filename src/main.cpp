@@ -1,6 +1,7 @@
 #include <stdio.h>
+#include "GameVersion.h"
 
 int main() {
-    printf("Hello world!");
+    printf(PROJECT_NAME " v" PROJECT_VERSION);
     return 0;
 }
