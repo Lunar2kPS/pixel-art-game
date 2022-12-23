@@ -41,3 +41,5 @@ exitCode=$?
 if [ $exitCode -ne 0 ]; then
     exit $exitCode
 fi
+
+printf "\nSUCCESS!"
