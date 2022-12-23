@@ -40,8 +40,18 @@ int main() {
         return 2;
     }
 
-    this_thread::sleep_for(chrono::milliseconds(3000));
-    printf("Done testing!\n");
+    glfwMakeContextCurrent(window);
+
+    while (!glfwWindowShouldClose(window)) {
+        //LINK ERROR: undefined symbol: __declspec(dllimport) glClear
+        //Maybe this has to do with the 
+        // glClear(GL_COLOR_BUFFER_BIT);
+
+        glfwSwapBuffers(window);
+
+        glfwPollEvents();
+    }
+    printf("Done!\n");
 
     glfwDestroyWindow(window);
     glfwTerminate();
