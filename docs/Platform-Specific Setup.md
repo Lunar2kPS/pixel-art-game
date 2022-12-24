@@ -1,4 +1,16 @@
 # Platform-Specific Setup
+## MacOS
+### Installing Development Dependencies
+#### CMake
+After downloading the .dmg file from https://cmake.org and moving the CMake application under `/Applications`, you'll want to add it to your path with something like the following:
+
+```sh
+sudo ln -s /Applications/CMake.app/Contents/bin/cmake /usr/local/bin/cmake
+make --version
+```
+
+You should see the CMake version correctly print out, indicating it's been downloaded onto your system with a symlink placed under an existing PATH-contained folder.
+
 ## Linux
 ### Installing Development Dependencies
 #### Clang Compiler

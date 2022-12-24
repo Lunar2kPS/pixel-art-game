@@ -34,7 +34,25 @@
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "linux-clang-x64"
+        },
+        {
+            "name": "MacOS64",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "out/",
+                "libraries/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "/usr/bin/clang++",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-x64"
         }
     ],
+    
     "version": 4
 }
