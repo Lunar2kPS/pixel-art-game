@@ -20,6 +20,12 @@ target_include_directories("${PROJECT_NAME}" PUBLIC "${PROJECT_BINARY_DIR}/inclu
 
 
 
+add_subdirectory("libraries/glad")
+target_link_libraries("${PROJECT_NAME}" PUBLIC glad)
+target_include_directories("${PROJECT_NAME}" PUBLIC "libraries/glad")
+
+
+
 # This turns OFF building the GLFW tests, examples and documentation:
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -34,7 +40,7 @@ add_subdirectory("libraries/glfw")
 target_link_libraries("${PROJECT_NAME}" PUBLIC glfw)
 
 # We need this for our C++ program to find the .h header files when building:
-target_include_directories("${PROJECT_NAME}" PUBLIC "libraries/glfw/include")
+target_include_directories("${PROJECT_NAME}" PUBLIC "libraries/glfw")
 
 
 

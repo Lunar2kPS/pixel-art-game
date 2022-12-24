@@ -2,7 +2,9 @@
 #include <thread>
 #include <sstream>
 
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>
+
 #include "GameVersion.h"
 
 using namespace std;
@@ -42,10 +44,23 @@ int main() {
 
     glfwMakeContextCurrent(window);
 
+    int version = gladLoadGL(glfwGetProcAddress);
+    if (version == 0) {
+        printf("Failed to initialize OpenGL context with GLAD!\n");
+        return 3;
+    }
+    printf("Loaded OpenGL %d.%d\n", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
+
     while (!glfwWindowShouldClose(window)) {
-        //LINK ERROR: undefined symbol: __declspec(dllimport) glClear
-        //Maybe this has to do with the 
-        // glClear(GL_COLOR_BUFFER_BIT);
+        //NOTE: Now that we have modern OpenGL loaded from glad (the library),
+        //We can use GL calls!
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glBegin(GL_TRIANGLES);
+        glVertex2f(-0.5f, -0.5f);
+        glVertex2f( 0.0f,  0.5f);
+        glVertex2f( 0.5f,  0.0f);
+        glEnd();
 
         glfwSwapBuffers(window);
 
