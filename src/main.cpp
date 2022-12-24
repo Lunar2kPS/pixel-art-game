@@ -35,9 +35,9 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2); //NOTE: Context profiles are only available in OpenGL 3.2+, so we'll require that!
 
     //NOTE: BEFORE doing this, I was getting the following results:
-    //  Windows:        OpenGL 4.6
+    //  Windows:        OpenGL 4.6          ==> NOW OpenGL 3.2
     //  MacOS:          OpenGL 2.1          ==> NOW OpenGL 4.1!
-    //  Linux:          OpenGL 4.6
+    //  Linux:          OpenGL 4.6          ==> NOW OpenGL 3.2
     //So, we set it to use OpenGL Core profile with forward compatibility: 
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
