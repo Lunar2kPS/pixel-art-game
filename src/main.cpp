@@ -13,6 +13,7 @@ void errorCallback(int errorCode, const char* description) {
     stringstream ss;
     ss << "Error code: " << errorCode << "\n";
     ss << description;
+    ss << "\n";
 
     const char* message = ss.str().c_str();
     fprintf(stderr, message);
@@ -22,21 +23,28 @@ int main() {
     printf(PROJECT_NAME " v" PROJECT_VERSION "\n");
 
     if (glfwInit() == GLFW_FALSE) {
-        fprintf(stderr, "GLFW initialization failed!");
+        fprintf(stderr, "GLFW initialization failed!\n");
         return 1;
     }
 
     glfwSetErrorCallback(errorCallback);
 
-    printf("Starting...\n");
     //NOTE: Let's require a certain (old) version of OpenGL or newer...
-    //Like OpenGL 2.0+:
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    //Like OpenGL 3.0+:
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2); //NOTE: Context profiles are only available in OpenGL 3.2+, so we'll require that!
+
+    //NOTE: BEFORE doing this, I was getting the following results:
+    //  Windows:        OpenGL 4.6
+    //  MacOS:          OpenGL 2.1          ==> NOW OpenGL 4.1!
+    //  Linux:          OpenGL 4.6
+    //So, we set it to use OpenGL Core profile with forward compatibility: 
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     GLFWwindow* window = glfwCreateWindow(800, 600, "TEST WINDOW", NULL, NULL);
     if (window == NULL) {
-        fprintf(stderr, "Failed to create window or OpenGL context!");
+        fprintf(stderr, "Failed to create window or OpenGL context!\n");
         //TODO: try-finally-like handling from C#.. I wonder how to do that here:
         glfwTerminate();
         return 2;
