@@ -21,3 +21,9 @@ git submodule update --init --recursive
 
 **See also:**
 ### [Platform-Specific Setup](./docs/Platform-Specific%20Setup.md)
+
+## References
+- [How to setup OpenGL with pixel-perfect rendering](https://gamedev.stackexchange.com/questions/103334/how-can-i-set-up-a-pixel-perfect-camera-using-opengl-and-orthographic-projection)
+- [LearnOpenGL.com -- Hello Window](https://learnopengl.com/Getting-started/Hello-Window)
+- [My previous OpenGL tutorial progress](https://github.com/2kCarlos/intro-to-cpp-opengl)
+  - _This will likely be important in abstracting some OpenGL features, but this project will take a 2D-first approach for drawing sprites rather than focusing on 3D geometry and 3D scenes._
