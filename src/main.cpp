@@ -47,16 +47,15 @@ int tryCreateWindow(const char* title, int width, int height, GLFWwindow*& windo
         glfwSetErrorCallback(errorCallback);
     }
 
-    GLFWwindow* windowPtr = glfwCreateWindow(width, height, title, NULL, NULL);
-    window = windowPtr;
-    if (windowPtr == NULL) {
+    window = glfwCreateWindow(width, height, title, NULL, NULL);
+    if (window == NULL) {
         fprintf(stderr, "Failed to create window or OpenGL context!\n");
         glfwTerminate();
         return 2;
     }
 
     if (!glfwInitialized) {
-        glfwMakeContextCurrent(windowPtr);
+        glfwMakeContextCurrent(window);
         int version = gladLoadGL(glfwGetProcAddress);
         if (version == 0) {
             printf("Failed to initialize OpenGL context with GLAD!\n");
