@@ -32,8 +32,9 @@ int tryCreateWindow(const char* title, int width, int height, GLFWwindow*& windo
         //NOTE: Let's require a certain (old) version of OpenGL or newer...
         //Like OpenGL 3.0+. HOWEVER,
         //NOTE: Context profiles are only available in OpenGL 3.2+, so we'll require that!
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        //TODO: Try to require 4.6, then if we get the error (during callback) of "Requested OpenGL version 4.6, got version 4.1", then request that version instead!
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 
         //NOTE: BEFORE doing this, I was getting the following results:
         //  Windows:        OpenGL 4.6          ==> NOW OpenGL 3.2
@@ -87,7 +88,7 @@ int main() {
     GLFWwindow* window;
     int initError = tryCreateWindow("Pixel Art Game", 800, 600, window);
     if (initError != 0) {
-        fprintf(stderr, "%s%d", "Exiting with initialization exit code ", initError);
+        fprintf(stderr, "%s%d\n", "Exiting with initialization exit code ", initError);
         return initError;
     }
 
