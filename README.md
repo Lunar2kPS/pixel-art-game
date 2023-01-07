@@ -27,3 +27,4 @@ git submodule update --init --recursive
 - [LearnOpenGL.com -- Hello Window](https://learnopengl.com/Getting-started/Hello-Window)
 - [My previous OpenGL tutorial progress](https://github.com/2kCarlos/intro-to-cpp-opengl)
   - _This will likely be important in abstracting some OpenGL features, but this project will take a 2D-first approach for drawing sprites rather than focusing on 3D geometry and 3D scenes._
+- [OpenGL Docs](https://docs.gl)
