@@ -42,4 +42,4 @@ if [ $exitCode -ne 0 ]; then
     exit $exitCode
 fi
 
-printf "\nSUCCESS!"
+printf "\n\nSUCCESS!\n\n"
