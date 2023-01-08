@@ -1,6 +1,5 @@
 {
     "files.associations": {
-        "*.meta": "yaml",
-        "xstring": "cpp"
+        "*.meta": "yaml"
     }
 }
