@@ -10,6 +10,8 @@
 #include "GameVersion.h"
 #include "platforms.h"
 #include "OpenGLUtil.h"
+#include "VertexArray.h"
+#include "VertexBufferLayout.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 
@@ -208,17 +210,13 @@ int main(int argCount, char* args[]) {
             3, 2, 1
         };
 
-        unsigned int vertexArrayId;
-        GLCall(glGenVertexArrays(1, &vertexArrayId));
-        GLCall(glBindVertexArray(vertexArrayId));
-
+        VertexArray vao;
         VertexBuffer vb = VertexBuffer(positions, POSITION_COUNT * sizeof(float));
         IndexBuffer ib = IndexBuffer(indices, INDEX_COUNT);
-
-        GLCall(glEnableVertexAttribArray(0));
-        GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), 0));     //NOTE: THIS BINDS the currently-bound vertex buffer to the currently-bound vao! (vertex buffer to vertex array obj)
-
         
+        VertexBufferLayout layout;
+        layout.push<float>(2);
+        vao.addBuffer(vb, layout);
 
         string exeFilePath = args[0];
         replaceAll(exeFilePath, "\\", "/");
@@ -242,8 +240,8 @@ int main(int argCount, char* args[]) {
         glfwSwapInterval(1);
 
         //CLEAR STATE
-        GLCall(glBindVertexArray(0));
         GLCall(glUseProgram(0));
+        vao.unbind();
         vb.unbind();
         ib.unbind();
 
@@ -254,17 +252,13 @@ int main(int argCount, char* args[]) {
             double dt = time - prevTime;
 
             GLCall(glUseProgram(shaderId));
-
             uniformColor[0] = 0.5f * cos(time) + 0.5f;
             uniformColor[1] = 0.5f * sin(time) + 0.5f;
             GLCall(glUniform4f(uniformColorId, uniformColor[0], uniformColor[1], uniformColor[2], uniformColor[3]));
-            GLCall(glBindVertexArray(vertexArrayId)); //NOTE: Also binds the vertex buffer linked to it!
+            
             ib.bind();
 
-            //NOTE: Now that we have modern OpenGL loaded from glad (the library),
-            //We can use GL calls!
             GLCall(glClear(GL_COLOR_BUFFER_BIT));
-
             GLCall(glDrawElements(GL_TRIANGLES, INDEX_COUNT, GL_UNSIGNED_INT, NULL));
 
             glfwSwapBuffers(window);
