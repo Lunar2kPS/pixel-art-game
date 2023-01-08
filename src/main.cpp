@@ -11,6 +11,7 @@
 
 #include "IndexBuffer.h"
 #include "OpenGLUtil.h"
+#include "Renderer.h"
 #include "Resources.h"
 #include "Shader.h"
 #include "VertexArray.h"
@@ -138,6 +139,8 @@ int main(int argCount, char* args[]) {
         vb.unbind();
         ib.unbind();
 
+        Renderer renderer;
+
         float uniformColor[4] = { 0, 0, 1, 1 };
         double prevTime = glfwGetTime();
         while (!glfwWindowShouldClose(window)) {
@@ -151,8 +154,8 @@ int main(int argCount, char* args[]) {
             
             ib.bind();
 
-            GLCall(glClear(GL_COLOR_BUFFER_BIT));
-            GLCall(glDrawElements(GL_TRIANGLES, INDEX_COUNT, GL_UNSIGNED_INT, NULL));
+            renderer.clear();
+            renderer.draw(vao, ib, shader);
 
             glfwSwapBuffers(window);
             glfwPollEvents();
