@@ -15,6 +15,28 @@ using namespace std;
 static bool glfwInitialized = 0;
 static string resourcesFolder;
 
+// #define ASSERT(x) if (!(x)) __debugbreak(); //TODO: Expand this to other compilers beyond just MSVC!
+//TODO: Maybe use https://github.com/GPMueller/mwe-cpp-exception
+
+#define GLCall(x) customGLClearErrors();\
+    x;\
+    customGLCheckForErrors(#x, __FILE__, __LINE__)
+
+void customGLClearErrors() {
+    while (glGetError() != GL_NO_ERROR);
+}
+
+bool customGLCheckForErrors(const char* functionName, const char* fileName, int lineNumber) {
+    GLenum error;
+    bool success = true;
+    while ((error = glGetError()) != GL_NO_ERROR) {
+        // printf("[OpenGL Error] (%d)\nCalled from %s in %s:%s", error, functionName, fileName, lineNumber);
+        printf("[OpenGL Error] (%d): %s\nin %s:line %d\n\n", error, functionName, fileName, lineNumber);
+        success = false;
+    }
+    return success;
+}
+
 void errorCallback(int errorCode, const char* description) {
     stringstream ss;
     ss << "GLFW Error code: " << errorCode << "\n";
@@ -111,21 +133,21 @@ ShaderProgramSource parseShader(const string& filePath) {
 }
 
 unsigned int compileShader(unsigned int type, const string& source) {
-    unsigned int id = glCreateShader(type);
+    GLCall(unsigned int id = glCreateShader(type));
     const char* src = source.c_str();
-    glShaderSource(id, 1, &src, NULL);
-    glCompileShader(id);
+    GLCall(glShaderSource(id, 1, &src, NULL));
+    GLCall(glCompileShader(id));
 
     int result;
     glGetShaderiv(id, GL_COMPILE_STATUS, &result);
     if (!result) {
         int length;
-        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+        GLCall(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
         char* message = new char[length]; //(char*) alloca(length * sizeof(char)); //NOTE: Allocated dynamically on the stack!
-        glGetShaderInfoLog(id, length, &length, message);
+        GLCall(glGetShaderInfoLog(id, length, &length, message));
         fprintf(stderr, "%s\n%s\n", "Failed to compile a shader!", message);
 
-        glDeleteShader(id);
+        GLCall(glDeleteShader(id));
         return 0;
     }
     return id;
@@ -136,19 +158,20 @@ unsigned int createShader(const string& vertexShader, const string& fragmentShad
     unsigned int vs = compileShader(GL_VERTEX_SHADER, vertexShader);
     unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
     
-    glAttachShader(programId, vs);
-    glAttachShader(programId, fs);
-    glLinkProgram(programId);
-    glValidateProgram(programId);
+    GLCall(glAttachShader(programId, vs));
+    GLCall(glAttachShader(programId, fs));
+    GLCall(glLinkProgram(programId));
+    GLCall(glValidateProgram(programId));
 
-    glDetachShader(programId, vs);
-    glDetachShader(programId, fs);
+    GLCall(glDetachShader(programId, vs));
+    GLCall(glDetachShader(programId, fs));
 
-    glDeleteShader(vs);
-    glDeleteShader(fs);
+    GLCall(glDeleteShader(vs));
+    GLCall(glDeleteShader(fs));
     return programId;
 }
 
+//NOTE: Huge thanks to https://stackoverflow.com/questions/2896600/how-to-replace-all-occurrences-of-a-character-in-string
 void replaceAll(string& source, const string& from, const string& to) {
     string newString;
     newString.reserve(source.length());  // avoids a few memory allocations
@@ -180,38 +203,45 @@ int main(int argCount, char* args[]) {
     printf("%s%s\n", "Platform: ", getPlatformName());
     printf("\n");
 
-    const int VERTEX_COUNT = 6;
+    const int VERTEX_COUNT = 4;
     const int POSITION_COUNT = 2 * VERTEX_COUNT;
+    const int INDEX_COUNT = 6;
     float r = 0.5f;
-    float s = 0.01f;
+
+    //Triangle layout:
+    //  1-----3
+    //  | \   |
+    //  |   \ |
+    //  0-----2
+    
     float positions[POSITION_COUNT] = {
-        //{0, 1, 2}
         -r, -r,
         -r,  r,
          r, -r,
-
-        //{3, 2, 1}
          r,  r,
-         r, -r,
-        -r,  r
     };
 
-    for (int i = 0; i < POSITION_COUNT / 2; i++)
-        positions[i] -= s;
-    for (int i = POSITION_COUNT / 2; i < POSITION_COUNT; i++)
-        positions[i] += s;
+    unsigned int indices[INDEX_COUNT] = {
+        0, 1, 2,
+        3, 2, 1
+    };
 
     unsigned int vertexArrayId;
-    glGenVertexArrays(1, &vertexArrayId);
-    glBindVertexArray(vertexArrayId);
+    GLCall(glGenVertexArrays(1, &vertexArrayId));
+    GLCall(glBindVertexArray(vertexArrayId));
 
     unsigned int vertexBufferId;
-    glGenBuffers(1, &vertexBufferId);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+    GLCall(glGenBuffers(1, &vertexBufferId));
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId));
+    GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW));
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), 0);
+    GLCall(glEnableVertexAttribArray(0));
+    GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), 0));
+
+    unsigned int indexBufferId;
+    GLCall(glGenBuffers(1, &indexBufferId));
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId));
+    GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
 
     string exeFilePath = args[0];
     replaceAll(exeFilePath, "\\", "/");
@@ -221,29 +251,27 @@ int main(int argCount, char* args[]) {
     printf("Resources folder path = %s\n", resourcesFolder.c_str());
 
     ShaderProgramSource source = parseShader("resources/shaders/Basic.glsl");
-    printf("VERTEX PROGRAM LOADED:\n%s\n\n", source.vertexSource.c_str());
-    printf("FRAGMENT PROGRAM LOADED:\n%s\n\n", source.fragmentSource.c_str());
+
+    printf("\n\n");
+    printf("VERTEX PROGRAM LOADED:\n%s\n", source.vertexSource.c_str());
+    printf("FRAGMENT PROGRAM LOADED:\n%s\n", source.fragmentSource.c_str());
 
     unsigned int shaderId = createShader(source.vertexSource, source.fragmentSource);
-    glUseProgram(shaderId);
+    GLCall(glUseProgram(shaderId));
 
     while (!glfwWindowShouldClose(window)) {
         //NOTE: Now that we have modern OpenGL loaded from glad (the library),
         //We can use GL calls!
-        glClear(GL_COLOR_BUFFER_BIT);
+        GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
-        //NOTE: No index buffer!
-        glDrawArrays(GL_TRIANGLES, 0, POSITION_COUNT / 2);
-
-        //NOTE: WITH an index buffer!
-        // glDrawElements(GL_TRIANGLES, POSITION_COUNT / 2, , NULL);
+        GLCall(glDrawElements(GL_TRIANGLES, INDEX_COUNT, GL_UNSIGNED_INT, NULL));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
     printf("Done!\n");
 
-    glDeleteProgram(shaderId);
+    GLCall(glDeleteProgram(shaderId));
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
