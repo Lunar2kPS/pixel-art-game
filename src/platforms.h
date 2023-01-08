@@ -9,3 +9,17 @@
 #else
     #define UNKNOWN_PLATFORM
 #endif
+
+inline const char* getPlatformName() {
+    return 
+#if defined WINDOWS
+        "Windows"
+#elif defined MACOS
+        "MacOS"
+#elif defined LINUX
+        "Linux"
+#else
+        "UNKNOWN"
+#endif
+    ;
+}

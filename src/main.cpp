@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <thread>
 #include <sstream>
+#include <fstream>
+#include <string>
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
@@ -11,6 +13,7 @@
 using namespace std;
 
 static bool glfwInitialized = 0;
+static string resourcesFolder;
 
 void errorCallback(int errorCode, const char* description) {
     stringstream ss;
@@ -67,21 +70,47 @@ int tryCreateWindow(const char* title, int width, int height, GLFWwindow*& windo
     return 0;
 }
 
-const char* getPlatformName() {
-    return 
-#if defined WINDOWS
-        "Windows"
-#elif defined MACOS
-        "MacOS"
-#elif defined LINUX
-        "Linux"
-#else
-        "UNKNOWN"
-#endif
-    ;
+struct ShaderProgramSource {
+    string vertexSource;
+    string fragmentSource;
+};
+
+ShaderProgramSource parseShader(const string& filePath) {
+    enum class ShaderType {
+        NONE = -1,
+        VERTEX = 0,
+        FRAGMENT = 1
+    };
+
+    string resourcesFilePath = filePath;
+    if (resourcesFilePath.find(resourcesFolder) == string::npos)
+        resourcesFilePath = resourcesFolder + "/" + resourcesFilePath;
+    printf("Parsing shader from %s\n", resourcesFilePath.c_str());
+
+    //NOTE: Already opens the file:
+    ifstream stream(resourcesFilePath);
+
+    string line;
+    stringstream ss[2];
+    ShaderType type = ShaderType::NONE;
+    while (getline(stream, line)) {
+        if (line.find("#shader") != string::npos) {
+            if (line.find("vertex") != string::npos)
+                type = ShaderType::VERTEX;
+            else if (line.find("fragment") != string::npos)
+                type = ShaderType::FRAGMENT;
+        } else {
+            ss[(int) type] << line << "\n";
+        }
+    }
+
+    return {
+        ss[(int) ShaderType::VERTEX].str(),
+        ss[(int) ShaderType::FRAGMENT].str()
+    };
 }
 
-static unsigned int compileShader(unsigned int type, const string& source) {
+unsigned int compileShader(unsigned int type, const string& source) {
     unsigned int id = glCreateShader(type);
     const char* src = source.c_str();
     glShaderSource(id, 1, &src, NULL);
@@ -120,7 +149,25 @@ unsigned int createShader(const string& vertexShader, const string& fragmentShad
     return programId;
 }
 
-int main() {
+void replaceAll(string& source, const string& from, const string& to) {
+    string newString;
+    newString.reserve(source.length());  // avoids a few memory allocations
+
+    size_t lastPos = 0;
+    size_t findPos;
+
+    while((findPos = source.find(from, lastPos)) != string::npos) {
+        newString.append(source, lastPos, findPos - lastPos);
+        newString += to;
+        lastPos = findPos + from.length();
+    }
+
+    // Care for the rest after last occurrence
+    newString.append(source, lastPos, source.length() - lastPos);
+    source.swap(newString);
+}
+
+int main(int argCount, char* args[]) {    
     printf(PROJECT_NAME " v" PROJECT_VERSION "\n");
 
     GLFWwindow* window;
@@ -138,10 +185,6 @@ int main() {
     float r = 0.5f;
     float s = 0.01f;
     float positions[POSITION_COUNT] = {
-        // -0.5f, -0.5f,
-        //  0.0f,  0.5f,
-        //  0.5f, -0.5f
-
         //{0, 1, 2}
         -r, -r,
         -r,  r,
@@ -170,25 +213,18 @@ int main() {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), 0);
 
-    string vertexShader = R"(
-        #version 330 core
-        layout(location = 0) in vec2 position;
+    string exeFilePath = args[0];
+    replaceAll(exeFilePath, "\\", "/");
+    size_t indexOfLastFolderSeparator = exeFilePath.find_last_of("/");
+    
+    resourcesFolder = exeFilePath.substr(0, indexOfLastFolderSeparator);
+    printf("Resources folder path = %s\n", resourcesFolder.c_str());
 
-        void main() {
-            gl_Position = vec4(position.xy, 0, 1);
-        }
-    )";
+    ShaderProgramSource source = parseShader("resources/shaders/Basic.glsl");
+    printf("VERTEX PROGRAM LOADED:\n%s\n\n", source.vertexSource.c_str());
+    printf("FRAGMENT PROGRAM LOADED:\n%s\n\n", source.fragmentSource.c_str());
 
-    string fragmentShader = R"(
-        #version 330 core
-        layout(location = 0) out vec4 color;
-
-        void main() {
-            color = vec4(0.1, 0.7, 1, 1);
-        }
-    )";
-
-    unsigned int shaderId = createShader(vertexShader, fragmentShader);
+    unsigned int shaderId = createShader(source.vertexSource, source.fragmentSource);
     glUseProgram(shaderId);
 
     while (!glfwWindowShouldClose(window)) {
