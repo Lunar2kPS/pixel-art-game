@@ -9,33 +9,14 @@
 
 #include "GameVersion.h"
 #include "platforms.h"
+#include "OpenGLUtil.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 
 using namespace std;
 
 static bool glfwInitialized = 0;
 static string resourcesFolder;
-
-// #define ASSERT(x) if (!(x)) __debugbreak(); //TODO: Expand this to other compilers beyond just MSVC!
-//TODO: Maybe use https://github.com/GPMueller/mwe-cpp-exception
-
-#define GLCall(x) customGLClearErrors();\
-    x;\
-    customGLCheckForErrors(#x, __FILE__, __LINE__)
-
-void customGLClearErrors() {
-    while (glGetError() != GL_NO_ERROR);
-}
-
-bool customGLCheckForErrors(const char* functionName, const char* fileName, int lineNumber) {
-    GLenum error;
-    bool success = true;
-    while ((error = glGetError()) != GL_NO_ERROR) {
-        // printf("[OpenGL Error] (%d)\nCalled from %s in %s:%s", error, functionName, fileName, lineNumber);
-        printf("[OpenGL Error] (%d): %s\nin %s:line %d\n\n", error, functionName, fileName, lineNumber);
-        success = false;
-    }
-    return success;
-}
 
 void errorCallback(int errorCode, const char* description) {
     stringstream ss;
@@ -203,100 +184,98 @@ int main(int argCount, char* args[]) {
     printf("%s%s\n", "Platform: ", getPlatformName());
     printf("\n");
 
-    const int VERTEX_COUNT = 4;
-    const int POSITION_COUNT = 2 * VERTEX_COUNT;
-    const int INDEX_COUNT = 6;
-    float r = 0.5f;
+    {
+        const int VERTEX_COUNT = 4;
+        const int POSITION_COUNT = 2 * VERTEX_COUNT;
+        const int INDEX_COUNT = 6;
+        float r = 0.5f;
 
-    //Triangle layout:
-    //  1-----3
-    //  | \   |
-    //  |   \ |
-    //  0-----2
-    
-    float positions[POSITION_COUNT] = {
-        -r, -r,
-        -r,  r,
-         r, -r,
-         r,  r,
-    };
+        //Triangle layout:
+        //  1-----3
+        //  | \   |
+        //  |   \ |
+        //  0-----2
+        
+        float positions[POSITION_COUNT] = {
+            -r, -r,
+            -r,  r,
+            r, -r,
+            r,  r,
+        };
 
-    unsigned int indices[INDEX_COUNT] = {
-        0, 1, 2,
-        3, 2, 1
-    };
+        unsigned int indices[INDEX_COUNT] = {
+            0, 1, 2,
+            3, 2, 1
+        };
 
-    unsigned int vertexArrayId;
-    GLCall(glGenVertexArrays(1, &vertexArrayId));
-    GLCall(glBindVertexArray(vertexArrayId));
+        unsigned int vertexArrayId;
+        GLCall(glGenVertexArrays(1, &vertexArrayId));
+        GLCall(glBindVertexArray(vertexArrayId));
 
-    unsigned int vertexBufferId;
-    GLCall(glGenBuffers(1, &vertexBufferId));
-    GLCall(glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId));
-    GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW));
+        VertexBuffer vb = VertexBuffer(positions, POSITION_COUNT * sizeof(float));
+        IndexBuffer ib = IndexBuffer(indices, INDEX_COUNT);
 
-    GLCall(glEnableVertexAttribArray(0));
-    GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), 0));     //NOTE: THIS BINDS the currently-bound vertex buffer to the currently-bound vao! (vertex buffer to vertex array obj)
+        GLCall(glEnableVertexAttribArray(0));
+        GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), 0));     //NOTE: THIS BINDS the currently-bound vertex buffer to the currently-bound vao! (vertex buffer to vertex array obj)
 
-    unsigned int indexBufferId;
-    GLCall(glGenBuffers(1, &indexBufferId));
-    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId));
-    GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
+        
 
-    string exeFilePath = args[0];
-    replaceAll(exeFilePath, "\\", "/");
-    size_t indexOfLastFolderSeparator = exeFilePath.find_last_of("/");
-    
-    resourcesFolder = exeFilePath.substr(0, indexOfLastFolderSeparator);
-    printf("Resources folder path = %s\n", resourcesFolder.c_str());
+        string exeFilePath = args[0];
+        replaceAll(exeFilePath, "\\", "/");
+        size_t indexOfLastFolderSeparator = exeFilePath.find_last_of("/");
+        
+        resourcesFolder = exeFilePath.substr(0, indexOfLastFolderSeparator);
+        printf("Resources folder path = %s\n", resourcesFolder.c_str());
 
-    ShaderProgramSource source = parseShader("resources/shaders/Basic.glsl");
+        ShaderProgramSource source = parseShader("resources/shaders/Basic.glsl");
 
-    printf("\n\n");
-    printf("VERTEX PROGRAM LOADED:\n%s\n", source.vertexSource.c_str());
-    printf("FRAGMENT PROGRAM LOADED:\n%s\n", source.fragmentSource.c_str());
+        printf("\n\n");
+        printf("VERTEX PROGRAM LOADED:\n%s\n", source.vertexSource.c_str());
+        printf("FRAGMENT PROGRAM LOADED:\n%s\n", source.fragmentSource.c_str());
 
-    unsigned int shaderId = createShader(source.vertexSource, source.fragmentSource);
-    GLCall(glUseProgram(shaderId));
-    GLCall(int uniformColorId = glGetUniformLocation(shaderId, "uniformColor"));
-    GLCall(glUniform4f(uniformColorId, 0, 0.7f, 1, 1));
-
-    //NOTE: VSYNC ON! Huge performance benefits..
-    glfwSwapInterval(1);
-
-    //CLEAR STATE
-    GLCall(glBindVertexArray(0));
-    GLCall(glUseProgram(0));
-    GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
-    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-
-    float uniformColor[4] = { 0, 0, 1, 1 };
-    double prevTime = glfwGetTime();
-    while (!glfwWindowShouldClose(window)) {
-        double time = glfwGetTime();
-        double dt = time - prevTime;
-
+        unsigned int shaderId = createShader(source.vertexSource, source.fragmentSource);
         GLCall(glUseProgram(shaderId));
+        GLCall(int uniformColorId = glGetUniformLocation(shaderId, "uniformColor"));
+        GLCall(glUniform4f(uniformColorId, 0, 0.7f, 1, 1));
 
-        uniformColor[0] = 0.5f * cos(time) + 0.5f;
-        uniformColor[1] = 0.5f * sin(time) + 0.5f;
-        GLCall(glUniform4f(uniformColorId, uniformColor[0], uniformColor[1], uniformColor[2], uniformColor[3]));
-        GLCall(glBindVertexArray(vertexArrayId)); //NOTE: Also binds the vertex buffer linked to it!
-        GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId));
+        //NOTE: VSYNC ON! Huge performance benefits..
+        glfwSwapInterval(1);
 
-        //NOTE: Now that we have modern OpenGL loaded from glad (the library),
-        //We can use GL calls!
-        GLCall(glClear(GL_COLOR_BUFFER_BIT));
+        //CLEAR STATE
+        GLCall(glBindVertexArray(0));
+        GLCall(glUseProgram(0));
+        vb.unbind();
+        ib.unbind();
 
-        GLCall(glDrawElements(GL_TRIANGLES, INDEX_COUNT, GL_UNSIGNED_INT, NULL));
+        float uniformColor[4] = { 0, 0, 1, 1 };
+        double prevTime = glfwGetTime();
+        while (!glfwWindowShouldClose(window)) {
+            double time = glfwGetTime();
+            double dt = time - prevTime;
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-        prevTime = time;
-    }
-    printf("Done!\n");
+            GLCall(glUseProgram(shaderId));
 
-    GLCall(glDeleteProgram(shaderId));
+            uniformColor[0] = 0.5f * cos(time) + 0.5f;
+            uniformColor[1] = 0.5f * sin(time) + 0.5f;
+            GLCall(glUniform4f(uniformColorId, uniformColor[0], uniformColor[1], uniformColor[2], uniformColor[3]));
+            GLCall(glBindVertexArray(vertexArrayId)); //NOTE: Also binds the vertex buffer linked to it!
+            ib.bind();
+
+            //NOTE: Now that we have modern OpenGL loaded from glad (the library),
+            //We can use GL calls!
+            GLCall(glClear(GL_COLOR_BUFFER_BIT));
+
+            GLCall(glDrawElements(GL_TRIANGLES, INDEX_COUNT, GL_UNSIGNED_INT, NULL));
+
+            glfwSwapBuffers(window);
+            glfwPollEvents();
+            prevTime = time;
+        }
+        printf("Done!\n");
+
+        GLCall(glDeleteProgram(shaderId));
+    } //Delete our stack-allocated data BEFORE terminating GLFW/OpenGL context, so everything we were using is cleaned up first.
+
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
