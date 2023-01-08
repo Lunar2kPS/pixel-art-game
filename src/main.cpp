@@ -1,19 +1,21 @@
 #include <stdio.h>
 #include <math.h>
-#include <sstream>
 #include <string>
-#include <fstream>
+#include <sstream>
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
 #include "GameVersion.h"
 #include "platforms.h"
+
+#include "IndexBuffer.h"
 #include "OpenGLUtil.h"
+#include "Resources.h"
+#include "Shader.h"
 #include "VertexArray.h"
 #include "VertexBufferLayout.h"
 #include "VertexBuffer.h"
-#include "IndexBuffer.h"
 
 using namespace std;
 
@@ -75,105 +77,7 @@ int tryCreateWindow(const char* title, int width, int height, GLFWwindow*& windo
     return 0;
 }
 
-struct ShaderProgramSource {
-    string vertexSource;
-    string fragmentSource;
-};
-
-ShaderProgramSource parseShader(const string& filePath) {
-    enum class ShaderType {
-        NONE = -1,
-        VERTEX = 0,
-        FRAGMENT = 1
-    };
-
-    string resourcesFilePath = filePath;
-    if (resourcesFilePath.find(resourcesFolder) == string::npos)
-        resourcesFilePath = resourcesFolder + "/" + resourcesFilePath;
-    printf("Parsing shader from %s\n", resourcesFilePath.c_str());
-
-    //NOTE: Already opens the file:
-    ifstream stream(resourcesFilePath);
-
-    string line;
-    stringstream ss[2];
-    ShaderType type = ShaderType::NONE;
-    while (getline(stream, line)) {
-        if (line.find("#shader") != string::npos) {
-            if (line.find("vertex") != string::npos)
-                type = ShaderType::VERTEX;
-            else if (line.find("fragment") != string::npos)
-                type = ShaderType::FRAGMENT;
-        } else {
-            ss[(int) type] << line << "\n";
-        }
-    }
-
-    return {
-        ss[(int) ShaderType::VERTEX].str(),
-        ss[(int) ShaderType::FRAGMENT].str()
-    };
-}
-
-unsigned int compileShader(unsigned int type, const string& source) {
-    GLCall(unsigned int id = glCreateShader(type));
-    const char* src = source.c_str();
-    GLCall(glShaderSource(id, 1, &src, NULL));
-    GLCall(glCompileShader(id));
-
-    int result;
-    glGetShaderiv(id, GL_COMPILE_STATUS, &result);
-    if (!result) {
-        int length;
-        GLCall(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
-        char* message = new char[length]; //(char*) alloca(length * sizeof(char)); //NOTE: Allocated dynamically on the stack!
-        GLCall(glGetShaderInfoLog(id, length, &length, message));
-        fprintf(stderr, "%s\n%s\n", "Failed to compile a shader!", message);
-
-        GLCall(glDeleteShader(id));
-        return 0;
-    }
-    return id;
-}
-
-unsigned int createShader(const string& vertexShader, const string& fragmentShader) {
-    unsigned int programId = glCreateProgram();
-    unsigned int vs = compileShader(GL_VERTEX_SHADER, vertexShader);
-    unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
-    
-    GLCall(glAttachShader(programId, vs));
-    GLCall(glAttachShader(programId, fs));
-    GLCall(glLinkProgram(programId));
-    GLCall(glValidateProgram(programId));
-
-    GLCall(glDetachShader(programId, vs));
-    GLCall(glDetachShader(programId, fs));
-
-    GLCall(glDeleteShader(vs));
-    GLCall(glDeleteShader(fs));
-    return programId;
-}
-
-//NOTE: Huge thanks to https://stackoverflow.com/questions/2896600/how-to-replace-all-occurrences-of-a-character-in-string
-void replaceAll(string& source, const string& from, const string& to) {
-    string newString;
-    newString.reserve(source.length());  // avoids a few memory allocations
-
-    size_t lastPos = 0;
-    size_t findPos;
-
-    while((findPos = source.find(from, lastPos)) != string::npos) {
-        newString.append(source, lastPos, findPos - lastPos);
-        newString += to;
-        lastPos = findPos + from.length();
-    }
-
-    // Care for the rest after last occurrence
-    newString.append(source, lastPos, source.length() - lastPos);
-    source.swap(newString);
-}
-
-int main(int argCount, char* args[]) {    
+int main(int argCount, char* args[]) {
     printf(PROJECT_NAME " v" PROJECT_VERSION "\n");
 
     GLFWwindow* window;
@@ -187,6 +91,8 @@ int main(int argCount, char* args[]) {
     printf("\n");
 
     {
+        Resources::initialize(args[0]);
+
         const int VERTEX_COUNT = 4;
         const int POSITION_COUNT = 2 * VERTEX_COUNT;
         const int INDEX_COUNT = 6;
@@ -218,29 +124,16 @@ int main(int argCount, char* args[]) {
         layout.push<float>(2);
         vao.addBuffer(vb, layout);
 
-        string exeFilePath = args[0];
-        replaceAll(exeFilePath, "\\", "/");
-        size_t indexOfLastFolderSeparator = exeFilePath.find_last_of("/");
+        Shader shader = Shader("resources/shaders/Basic.glsl");
         
-        resourcesFolder = exeFilePath.substr(0, indexOfLastFolderSeparator);
-        printf("Resources folder path = %s\n", resourcesFolder.c_str());
-
-        ShaderProgramSource source = parseShader("resources/shaders/Basic.glsl");
-
-        printf("\n\n");
-        printf("VERTEX PROGRAM LOADED:\n%s\n", source.vertexSource.c_str());
-        printf("FRAGMENT PROGRAM LOADED:\n%s\n", source.fragmentSource.c_str());
-
-        unsigned int shaderId = createShader(source.vertexSource, source.fragmentSource);
-        GLCall(glUseProgram(shaderId));
-        GLCall(int uniformColorId = glGetUniformLocation(shaderId, "uniformColor"));
-        GLCall(glUniform4f(uniformColorId, 0, 0.7f, 1, 1));
+        shader.bind();
+        shader.setUniform4f("uniformColor", 0, 0.7f, 1, 1);
 
         //NOTE: VSYNC ON! Huge performance benefits..
         glfwSwapInterval(1);
 
         //CLEAR STATE
-        GLCall(glUseProgram(0));
+        shader.unbind();
         vao.unbind();
         vb.unbind();
         ib.unbind();
@@ -251,10 +144,10 @@ int main(int argCount, char* args[]) {
             double time = glfwGetTime();
             double dt = time - prevTime;
 
-            GLCall(glUseProgram(shaderId));
             uniformColor[0] = 0.5f * cos(time) + 0.5f;
             uniformColor[1] = 0.5f * sin(time) + 0.5f;
-            GLCall(glUniform4f(uniformColorId, uniformColor[0], uniformColor[1], uniformColor[2], uniformColor[3]));
+            shader.bind();
+            shader.setUniform4f("uniformColor", uniformColor[0], uniformColor[1], uniformColor[2], uniformColor[3]);
             
             ib.bind();
 
@@ -266,8 +159,6 @@ int main(int argCount, char* args[]) {
             prevTime = time;
         }
         printf("Done!\n");
-
-        GLCall(glDeleteProgram(shaderId));
     } //Delete our stack-allocated data BEFORE terminating GLFW/OpenGL context, so everything we were using is cleaned up first.
 
     glfwDestroyWindow(window);
