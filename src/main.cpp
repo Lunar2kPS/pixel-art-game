@@ -236,7 +236,7 @@ int main(int argCount, char* args[]) {
     GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW));
 
     GLCall(glEnableVertexAttribArray(0));
-    GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), 0));
+    GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), 0));     //NOTE: THIS BINDS the currently-bound vertex buffer to the currently-bound vao! (vertex buffer to vertex array obj)
 
     unsigned int indexBufferId;
     GLCall(glGenBuffers(1, &indexBufferId));
@@ -264,15 +264,25 @@ int main(int argCount, char* args[]) {
     //NOTE: VSYNC ON! Huge performance benefits..
     glfwSwapInterval(1);
 
+    //CLEAR STATE
+    GLCall(glBindVertexArray(0));
+    GLCall(glUseProgram(0));
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+
     float uniformColor[4] = { 0, 0, 1, 1 };
     double prevTime = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
         double time = glfwGetTime();
         double dt = time - prevTime;
-        
+
+        GLCall(glUseProgram(shaderId));
+
         uniformColor[0] = 0.5f * cos(time) + 0.5f;
         uniformColor[1] = 0.5f * sin(time) + 0.5f;
         GLCall(glUniform4f(uniformColorId, uniformColor[0], uniformColor[1], uniformColor[2], uniformColor[3]));
+        GLCall(glBindVertexArray(vertexArrayId)); //NOTE: Also binds the vertex buffer linked to it!
+        GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId));
 
         //NOTE: Now that we have modern OpenGL loaded from glad (the library),
         //We can use GL calls!
