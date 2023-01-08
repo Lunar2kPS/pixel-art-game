@@ -35,14 +35,20 @@ class VertexBufferLayout {
         inline unsigned int getStride() const { return stride; }
         inline const vector<VertexAttribute>& getAttributes() const { return attributes; }
 
-        template<typename T> void push(unsigned int count) {
-            //TODO: More informative error?
-            //ASSERT(false);
-            //static_assert(false);
-            throw 200;
-        }
+        // template<typename T> void push(unsigned int count) {
+        //     //TODO: More informative error?
+        //     //ASSERT(false);
+        //     //static_assert(false);
+        //     throw 200;
+        // }
         
-        template<> void push<float>(unsigned int count);
-        template<> void push<unsigned int>(unsigned int count);
-        template<> void push<unsigned char>(unsigned int count);
+        //FIXME: Error on Linux: explicit specialization is not allowed in the current scope
+        //Not sure why this was happening... but oh well! Skipping templates in C++ for now.
+        // template<> void push<float>(unsigned int count);
+        // template<> void push<unsigned int>(unsigned int count);
+        // template<> void push<unsigned char>(unsigned int count);
+
+        void pushFloat(unsigned int count);
+        void pushUInt(unsigned int count);
+        void pushUChar(unsigned int count);
 };

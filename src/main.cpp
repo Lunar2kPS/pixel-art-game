@@ -122,7 +122,11 @@ int main(int argCount, char* args[]) {
         IndexBuffer ib = IndexBuffer(indices, INDEX_COUNT);
         
         VertexBufferLayout layout;
-        layout.push<float>(2);
+
+        //FIXME: Linux error, see VertexBufferLayout.h for more details.
+        // layout.push<float>(2);
+        layout.pushFloat(2);
+
         vao.addBuffer(vb, layout);
 
         Shader shader = Shader("resources/shaders/Basic.glsl");
