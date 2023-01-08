@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include <thread>
+#include <math.h>
 #include <sstream>
-#include <fstream>
 #include <string>
+#include <fstream>
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
@@ -258,8 +258,22 @@ int main(int argCount, char* args[]) {
 
     unsigned int shaderId = createShader(source.vertexSource, source.fragmentSource);
     GLCall(glUseProgram(shaderId));
+    GLCall(int uniformColorId = glGetUniformLocation(shaderId, "uniformColor"));
+    GLCall(glUniform4f(uniformColorId, 0, 0.7f, 1, 1));
 
+    //NOTE: VSYNC ON! Huge performance benefits..
+    glfwSwapInterval(1);
+
+    float uniformColor[4] = { 0, 0, 1, 1 };
+    double prevTime = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
+        double time = glfwGetTime();
+        double dt = time - prevTime;
+        
+        uniformColor[0] = 0.5f * cos(time) + 0.5f;
+        uniformColor[1] = 0.5f * sin(time) + 0.5f;
+        GLCall(glUniform4f(uniformColorId, uniformColor[0], uniformColor[1], uniformColor[2], uniformColor[3]));
+
         //NOTE: Now that we have modern OpenGL loaded from glad (the library),
         //We can use GL calls!
         GLCall(glClear(GL_COLOR_BUFFER_BIT));
@@ -268,6 +282,7 @@ int main(int argCount, char* args[]) {
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+        prevTime = time;
     }
     printf("Done!\n");
 
