@@ -11,6 +11,7 @@
 
 #include "IndexBuffer.h"
 #include "OpenGLUtil.h"
+#include "Texture.h"
 #include "Renderer.h"
 #include "Resources.h"
 #include "Shader.h"
@@ -95,7 +96,7 @@ int main(int argCount, char* args[]) {
         Resources::initialize(args[0]);
 
         const int VERTEX_COUNT = 4;
-        const int POSITION_COUNT = 2 * VERTEX_COUNT;
+        const int VERTEX_COORD_COUNT = 2 * VERTEX_COUNT + 2 * VERTEX_COUNT; //pos.xy and uv.xy
         const int INDEX_COUNT = 6;
         float r = 0.5f;
 
@@ -105,11 +106,11 @@ int main(int argCount, char* args[]) {
         //  |   \ |
         //  0-----2
         
-        float positions[POSITION_COUNT] = {
-            -r, -r,
-            -r,  r,
-            r, -r,
-            r,  r,
+        float verts[VERTEX_COORD_COUNT] = {
+            -r, -r, 0, 0,
+            -r,  r, 0, 1,
+            r, -r, 1, 0,
+            r,  r, 1, 1
         };
 
         unsigned int indices[INDEX_COUNT] = {
@@ -118,21 +119,24 @@ int main(int argCount, char* args[]) {
         };
 
         VertexArray vao;
-        VertexBuffer vb = VertexBuffer(positions, POSITION_COUNT * sizeof(float));
+        VertexBuffer vb = VertexBuffer(verts, VERTEX_COORD_COUNT * sizeof(float));
         IndexBuffer ib = IndexBuffer(indices, INDEX_COUNT);
         
         VertexBufferLayout layout;
 
         //FIXME: Linux error, see VertexBufferLayout.h for more details.
         // layout.push<float>(2);
-        layout.pushFloat(2);
+        layout.pushFloat(2);        //pos.xy
+        layout.pushFloat(2);        //ux.xy
 
         vao.addBuffer(vb, layout);
 
         Shader shader = Shader("resources/shaders/Basic.glsl");
-        
+        Texture tex = Texture("resources/spritesheets/Grass Tile.png");
+
         shader.bind();
-        shader.setUniform4f("uniformColor", 0, 0.7f, 1, 1);
+        tex.bind(); //NOTE: Slot 0
+        shader.setUniform1i("uniformTexture", 0); //NOTE: Corresponds to slot 0
 
         //NOTE: VSYNC ON! Huge performance benefits..
         glfwSwapInterval(1);
@@ -144,6 +148,10 @@ int main(int argCount, char* args[]) {
         ib.unbind();
 
         Renderer renderer;
+
+        //NOTE: Alpha blending enabled:
+        GLCall(glEnable(GL_BLEND));
+        GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
         float uniformColor[4] = { 0, 0, 1, 1 };
         double prevTime = glfwGetTime();

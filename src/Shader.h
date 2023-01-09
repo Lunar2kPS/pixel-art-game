@@ -20,6 +20,7 @@ class Shader {
         void bind() const;
         void unbind() const;
         void setUniform4f(const string& name, float x, float y, float z, float w);
+        void setUniform1i(const string& name, int x);
 
     private:
         unsigned int getUniformId(const string& name);

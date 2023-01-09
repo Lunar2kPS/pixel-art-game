@@ -29,7 +29,7 @@ void VertexArray::addBuffer(const VertexBuffer& vb, const VertexBufferLayout& la
     unsigned int offset = 0;
     for (int i = 0; i < attributes.size(); i++) {
         VertexAttribute attribute = attributes[i];
-        GLCall(glEnableVertexAttribArray(0));
+        GLCall(glEnableVertexAttribArray(i));
         
         //NOTE: THIS BINDS the currently-bound vertex buffer to the currently-bound vao! (vertex buffer to vertex array obj)
         GLCall(glVertexAttribPointer(i, attribute.count, attribute.type, attribute.normalized, layout.getStride(), (const void*) offset));

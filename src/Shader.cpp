@@ -10,7 +10,7 @@ using std::ifstream;
 using std::stringstream;
 
 Shader::Shader(const string& filePath)
-    :filePath(filePath), rendererId(0) {
+    : filePath(filePath), rendererId(0) {
 
     ShaderProgramSource source = parseShader(filePath);
 
@@ -35,8 +35,13 @@ void Shader::unbind() const {
 }
 
 void Shader::setUniform4f(const string& name, float x, float y, float z, float w) {
-    GLCall(int uniformColorId = glGetUniformLocation(rendererId, name.c_str()));
-    GLCall(glUniform4f(uniformColorId, x, y, z, w));
+    GLCall(int id = glGetUniformLocation(rendererId, name.c_str()));
+    GLCall(glUniform4f(id, x, y, z, w));
+}
+
+void Shader::setUniform1i(const string& name, int x) {
+    GLCall(int id = glGetUniformLocation(rendererId, name.c_str()));
+    GLCall(glUniform1i(id, x));
 }
 
 ShaderProgramSource Shader::parseShader(const string& filePath) {
