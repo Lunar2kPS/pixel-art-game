@@ -12,5 +12,8 @@
 *.ttf       binary
 *.otf       binary
 
+# For reference, see:       https://github.com/github/linguist/blob/master/docs/overrides.md
 # Ignore these folders from language statistics:
-libraries/**      linguist-vendored
+libraries/**       linguist-vendored
+src/libraries/**   linguist-vendored
+docs/**            linguist-documentation
