@@ -12,7 +12,7 @@
 #       ./build.sh x64-release
 #       ./build.sh x64-debug
 
-defaultConfig="x64-release"
+defaultConfig="windows-x64-release"
 
 argCount=$#
 args=("$@")
