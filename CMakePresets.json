@@ -69,7 +69,7 @@
             }
         },
         {
-            "name": "macos-x64-runtime",
+            "name": "macos-x64-release",
             "displayName": "MacOS x64 Release",
             "inherits": "macos-x64-debug",
             "cacheVariables": {
