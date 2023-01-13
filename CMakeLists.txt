@@ -1,6 +1,6 @@
 # HUGE THANKS to https://cmake.org/cmake/help/latest/guide/tutorial/A Basic Starting Point.html
 cmake_minimum_required(VERSION 3.19)
-project("PixelArtGame" VERSION 1.0.0)
+project("PixelArtGame" VERSION 1.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -56,6 +56,12 @@ target_link_libraries("${PROJECT_NAME}" PUBLIC glfw)
 # We need this for our C++ program to find the .h header files when building:
 target_include_directories("${PROJECT_NAME}" PUBLIC "libraries/glfw")
 
+
+# See for glm compiler options: https://chromium.googlesource.com/external/github.com/g-truc/glm/+/HEAD/manual.md
+add_compile_definitions(GLM_FORCE_LEFT_HANDED)
+add_subdirectory("libraries/glm")
+target_link_libraries("${PROJECT_NAME}" PUBLIC glm)
+target_include_directories("${PROJECT_NAME}" PUBLIC "libraries/glm")
 
 
 target_compile_options("${PROJECT_NAME}" PUBLIC "-Wall")

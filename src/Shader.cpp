@@ -34,14 +34,19 @@ void Shader::unbind() const {
     GLCall(glUseProgram(0));
 }
 
+void Shader::setUniform1i(const string& name, int x) {
+    GLCall(int id = glGetUniformLocation(rendererId, name.c_str()));
+    GLCall(glUniform1i(id, x));
+}
+
 void Shader::setUniform4f(const string& name, float x, float y, float z, float w) {
     GLCall(int id = glGetUniformLocation(rendererId, name.c_str()));
     GLCall(glUniform4f(id, x, y, z, w));
 }
 
-void Shader::setUniform1i(const string& name, int x) {
+void Shader::setUniformMatrix4fv(const string& name, mat4& matrix) {
     GLCall(int id = glGetUniformLocation(rendererId, name.c_str()));
-    GLCall(glUniform1i(id, x));
+    GLCall(glUniformMatrix4fv(id, 1, false, &matrix[0][0]));
 }
 
 ShaderProgramSource Shader::parseShader(const string& filePath) {

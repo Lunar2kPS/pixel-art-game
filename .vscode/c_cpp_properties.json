@@ -4,7 +4,7 @@
             "name": "Windows64",
             "includePath": [
                 "${workspaceFolder}/**",
-                "out/build/x64-release/includes/**",
+                "out/build/windows-x64-release/includes/**",
                 "libraries/**"
             ],
             "defines": [
@@ -22,7 +22,7 @@
             "name": "Linux64",
             "includePath": [
                 "${workspaceFolder}/**",
-                "out/",
+                "out/build/linux-x64-release/includes/**",
                 "libraries/**"
             ],
             "defines": [
@@ -40,7 +40,7 @@
             "name": "MacOS64",
             "includePath": [
                 "${workspaceFolder}/**",
-                "out/",
+                "out/build/macos-x64-release/includes/**",
                 "libraries/**"
             ],
             "defines": [

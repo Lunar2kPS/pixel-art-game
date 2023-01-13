@@ -5,6 +5,8 @@
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 #include "GameVersion.h"
 #include "platforms.h"
@@ -19,7 +21,8 @@
 #include "VertexBufferLayout.h"
 #include "VertexBuffer.h"
 
-using namespace std;
+using namespace glm;
+using std::stringstream;
 
 static bool glfwInitialized = 0;
 static string resourcesFolder;
@@ -95,27 +98,50 @@ int main(int argCount, char* args[]) {
     {
         Resources::initialize(args[0]);
 
-        const int VERTEX_COUNT = 4;
-        const int VERTEX_COORD_COUNT = 2 * VERTEX_COUNT + 2 * VERTEX_COUNT; //pos.xy and uv.xy
-        const int INDEX_COUNT = 6;
+        const int VERTEX_COUNT = 6;
+        const int VERTEX_COORD_COUNT = 3 * VERTEX_COUNT + 2 * VERTEX_COUNT; //pos.xyz and uv.xy
+        const int INDEX_COUNT = 12;
         float r = 0.5f;
 
+        vec2 sheetTiles = vec2(8, 8);
+        vec2 sheetTileUVDistance = vec2(1 / sheetTiles.x, 1 / sheetTiles.y);
+
+        vec2 tile = vec2(1, 0);
+
         //Triangle layout:
-        //  1-----3
-        //  | \   |
-        //  |   \ |
+        //           5
+        //          /|
+        //  1-----3\ |
+        //  | \   | \4
+        //  |   \ | /
         //  0-----2
         
+
+        //My attempted space:
+        //Left-handed coords XYZ:
+        //     +y
+        //      ^
+        //      |  +z
+        //      | /
+        //      |/
+        //      ------> +x
+
         float verts[VERTEX_COORD_COUNT] = {
-            -r, -r, 0, 0,
-            -r,  r, 0, 1,
-            r, -r, 1, 0,
-            r,  r, 1, 1
+            -r, -r, -r, tile.x * sheetTileUVDistance.x, 1 - ((tile.y + 1) * sheetTileUVDistance.y),
+            -r,  r, -r, tile.x * sheetTileUVDistance.x, 1 - (tile.y * sheetTileUVDistance.y),
+            r, -r, -r, (tile.x + 1) * sheetTileUVDistance.x, 1 - ((tile.y + 1) * sheetTileUVDistance.y),
+            r,  r, -r, (tile.x + 1) * sheetTileUVDistance.x, 1 - (tile.y * sheetTileUVDistance.y),
+
+            r, -r, r, (tile.x + 2) * sheetTileUVDistance.x, 1 - ((tile.y + 1) * sheetTileUVDistance.y),
+            r, r, r, (tile.x + 2) * sheetTileUVDistance.x, 1 - (tile.y * sheetTileUVDistance.y)
         };
 
         unsigned int indices[INDEX_COUNT] = {
             0, 1, 2,
-            3, 2, 1
+            3, 2, 1,
+
+            2, 3, 4,
+            5, 4, 3
         };
 
         VertexArray vao;
@@ -125,18 +151,19 @@ int main(int argCount, char* args[]) {
         VertexBufferLayout layout;
 
         //FIXME: Linux error, see VertexBufferLayout.h for more details.
-        // layout.push<float>(2);
-        layout.pushFloat(2);        //pos.xy
-        layout.pushFloat(2);        //ux.xy
+        // layout.push<float>(3);
+        layout.pushFloat(3);        //pos.xyz
+        layout.pushFloat(2);        //uv.xy
 
         vao.addBuffer(vb, layout);
 
         Shader shader = Shader("resources/shaders/Basic.glsl");
-        Texture tex = Texture("resources/spritesheets/Grass Tile.png");
+        Texture tex = Texture("resources/spritesheets/Terrain Tiles.png");
 
         shader.bind();
         tex.bind(); //NOTE: Slot 0
         shader.setUniform1i("uniformTexture", 0); //NOTE: Corresponds to slot 0
+        shader.setUniform4f("uniformColor", 1, 1, 1, 1);
 
         //NOTE: VSYNC ON! Huge performance benefits..
         glfwSwapInterval(1);
@@ -153,16 +180,98 @@ int main(int argCount, char* args[]) {
         GLCall(glEnable(GL_BLEND));
         GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-        float uniformColor[4] = { 0, 0, 1, 1 };
-        double prevTime = glfwGetTime();
-        while (!glfwWindowShouldClose(window)) {
-            double time = glfwGetTime();
-            double dt = time - prevTime;
+        GLCall(glEnable(GL_CULL_FACE));
+        GLCall(glCullFace(GL_BACK));
+        GLCall(glFrontFace(GL_CW));
 
-            uniformColor[0] = 0.5f * cos(time) + 0.5f;
-            uniformColor[1] = 0.5f * sin(time) + 0.5f;
+        int windowWidth;
+        int windowHeight;
+
+        enum class MovementMode {
+            Sprite = 0,
+            Camera = 1
+        };
+        MovementMode moveTarget = MovementMode::Sprite;
+        float timeLastSwitched = 0;
+        vec3 modelPosition = vec3(0, 0, 2);
+        vec3 cameraPosition = vec3(0);
+
+        float prevTime = glfwGetTime();
+        while (!glfwWindowShouldClose(window)) {
+            glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
+            float time = glfwGetTime();
+            float dt = time - prevTime;
+
             shader.bind();
-            shader.setUniform4f("uniformColor", uniformColor[0], uniformColor[1], uniformColor[2], uniformColor[3]);
+
+
+            vec3 input = vec3(0);
+            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+                input.x--;
+            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+                input.x++;
+                
+            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+                input.y--;
+            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+                input.y++;
+
+            if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+                input.z--;
+            if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+                input.z++;
+
+            if (glfwGetKey(window, GLFW_KEY_0) && time - timeLastSwitched > 1) {
+                moveTarget = (MovementMode) ((int) moveTarget + 1);
+                if ((int) moveTarget > 1)
+                    moveTarget = (MovementMode) 0;
+                timeLastSwitched = time;
+                printf("moveTarget = %d\n", moveTarget);
+            }
+
+            vec3 deltaPosition = r * 10 * dt * input;
+            switch (moveTarget) {
+                case MovementMode::Sprite:
+                    modelPosition += deltaPosition;
+                    break;
+                case MovementMode::Camera:
+                    cameraPosition += deltaPosition;
+                    break;
+            }
+
+            //NOTE: mat4(1) seems to be the identity matrix. I don't really understand their docs too well..
+            mat4 modelMatrix = mat4(1);            
+            modelMatrix = glm::translate(modelMatrix, modelPosition);
+            modelMatrix = glm::rotate(modelMatrix, (float) 2 * time, vec3(0, 1, 0));
+            
+            mat4 viewMatrix = mat4(1);
+            viewMatrix = glm::translate(viewMatrix, -cameraPosition);
+
+            mat4 projectionMatrix = //mat4(1);
+            // glm::ortho(
+            //     (float) -windowWidth / 2,
+            //     (float) windowWidth / 2,
+            //     (float) -windowHeight / 2,
+            //     (float) windowHeight / 2,
+            //     (float) 0.01f,
+            //     (float) 1000
+            // );
+
+            glm::perspective(
+                (float) glm::radians((float) 60),
+                (float) windowWidth / (float) windowHeight,
+                (float) 0.01f,
+                (float) 1000
+            );
+
+            //NOTE: Because NDC in OpenGL is [-1, 1] in XY axes,
+            //I set the ortho camera ranges to -1/2 to +1/2 of width and height to match.
+            //That way, a camera at the world origin, back some -Z units, will see objects at (0, 0, 0) in the center of the screen.
+
+            //NOTE: PVM ordering because of column-major matrices. It's weird.
+            mat4 mvp = projectionMatrix * viewMatrix * modelMatrix;
+            shader.setUniformMatrix4fv("uniformMVP", mvp);
             
             ib.bind();
 
