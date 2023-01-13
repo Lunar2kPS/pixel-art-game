@@ -32,21 +32,3 @@ You should see the CMake version correctly print out, indicating it's been downl
 
 #### Building GLFW _(from source files, brought in as a Git submodule)_
 To build GLFW along with this project, follow their [compile guide](https://www.glfw.org/docs/latest/compile_guide.html). To find out if your Linux machine is using the X11 or Wayland windowing system, go to Settings -> About. You should find a field that says "Windowing System", with a value such as X11.
-
-
-### Building on Linux (X11)
-You may want to make all of the top-level scripts executable:
-
-`chmod +rwx ./*.sh`
-
-:warning: :hammer_and_wrench: We need to update the bash scripts and CMakePresets.json to be cross-platform, so in the meantime, use the following commands to build the C++ project:
-
-```sh
-cmake . -B out
-cmake --build out
-```
-
-Then to run it:
-```sh
-./out/PixelArtGame
-```
