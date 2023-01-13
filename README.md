@@ -24,16 +24,15 @@ git submodule update --init --recursive
 ```
 
 ### Building & Running the Project
-Once your [development environment is setup](./docs/Platform-Specific%20Setup.md), you can run the following:
+Once your [development environment is setup](./docs/Platform-Specific%20Setup.md), you can run the following on any platform _(Windows, MacOS, or Linux)_:
 
-_On Windows,_
 ```sh
-./build.sh && ./run-x64-release.sh
-```
+# This creates an alias for each of the scripts under the ./scripts folder!
+# Run it and see the output of each of the aliases it creates.
+source ./aliases.sh
 
-_On MacOS and Linux,_
-```sh
-cmake . -B out && cmake --build out && ./out/PixelArtGame
+# This calls the build.sh and run-release.sh scripts under the scripts folder, using aliases:
+build && run-release
 ```
 
 ## References
