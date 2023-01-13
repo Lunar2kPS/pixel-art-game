@@ -2,17 +2,18 @@
 
 # This is a helper script to build when Visual Studio is not available
 #       (For example, when developing on MacOS or Linux systems).
-# The default configuration is x64-release, but you may pass a different config as an argument.
+# The default configuration is the 64-bit Release version for your OS.
+# Note that you may pass a different config as an argument.
 # To see the available values, see the "name" values of the configurationPresets array in CMakePresets.json
 
 # COMMAND LINE USAGE:
 # ./build.sh [CONFIG]
 
 # EXAMPLES:
-#       ./build.sh x64-release
-#       ./build.sh x64-debug
+#       ./build.sh windows-x64-release
+#       ./build.sh linux-x64-debug
 
-defaultConfig="windows-x64-release"
+source $(dirname $0)"/get-platform-default-config.sh"
 
 argCount=$#
 args=("$@")
