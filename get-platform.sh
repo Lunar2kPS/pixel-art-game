@@ -23,21 +23,13 @@ lowercaseOSType=$(echo "$OSTYPE" | tr '[:upper:]' '[:lower:]')
 #       $OSTYPE     linux-gnu
 
 simpleOSName="Unknown"
-if [[ $lowercaseUName =~ $windowsNamePattern ]]; then
-    printf "WIN A\n"
+if [[ $lowercaseUName =~ $windowsNamePattern && $lowercaseOSType =~ $windowsNamePattern ]]; then
+    simpleOSName="Windows"
 fi
-if [[ $lowercaseOSType =~ $windowsNamePattern ]]; then
-    printf "WIN B\n"
+if [[ $lowercaseUName =~ $macOSNamePattern && $lowercaseOSType =~ $macOSNamePattern ]]; then
+    simpleOSName="MacOS"
 fi
-if [[ $lowercaseUName =~ $macOSNamePattern ]]; then
-    printf "MAC A\n"
+if [[ $lowercaseUName =~ $linuxNamePattern && $lowercaseOSType =~ $linuxNamePattern ]]; then
+    simpleOSName="Linux"
 fi
-if [[ $lowercaseOSType =~ $macOSNamePattern ]]; then
-    printf "MAC B\n"
-fi
-if [[ $lowercaseUName =~ $linuxNamePattern ]]; then
-    printf "LINUX A\n"
-fi
-if [[ $lowercaseOSType =~ $linuxNamePattern ]]; then
-    printf "LINUX B\n"
-fi
+printf "Platform: $simpleOSName\n"
