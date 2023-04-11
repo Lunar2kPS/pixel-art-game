@@ -63,6 +63,23 @@ add_subdirectory("libraries/glm")
 target_link_libraries("${PROJECT_NAME}" PUBLIC glm)
 target_include_directories("${PROJECT_NAME}" PUBLIC "libraries/glm")
 
-
 target_compile_options("${PROJECT_NAME}" PUBLIC "-Wall")
 target_compile_options("${PROJECT_NAME}" PUBLIC "-Wno-trigraphs")
+
+if (UNIX AND NOT APPLE)
+    set(LINUX TRUE)
+endif()
+
+if (WIN32)
+    # See: https://github.com/wixtoolset/wix3
+    # For a list of available CPack generators, use the following command:
+    #       cpack --help
+    set(CPACK_GENERATOR "WIX")
+    set(CPACK_PACKAGE_NAME "Pixel Art Game")
+    set(CPACK_PACKAGE_VENDOR "Carlos DaLomba")
+
+    install(TARGETS "${PROJECT_NAME}" DESTINATION "/")
+    install(DIRECTORY "${PROJECT_BINARY_DIR}/resources/" DESTINATION "resources")
+
+    include(CPack)
+endif()
