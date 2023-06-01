@@ -29,7 +29,8 @@ Once your [development environment is setup](./docs/Platform-Specific%20Setup.md
 ```sh
 # This creates an alias for each of the scripts under the ./scripts folder!
 # Run it and see the output of each of the aliases it creates.
-source ./aliases.sh
+git submodule update --init --recursive
+source ./cmake-cpp-scripts/aliases.sh
 
 # This calls the build.sh and run-release.sh scripts under the scripts folder, using aliases:
 build && run-release
