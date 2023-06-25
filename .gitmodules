@@ -4,6 +4,6 @@
 [submodule "libraries/glm"]
 	path = libraries/glm
 	url = https://github.com/g-truc/glm
-[submodule "cmake-cpp-scripts"]
-	path = cmake-cpp-scripts
-	url = https://github.com/CometCarlos/cmake-cpp-scripts
+[submodule "cmake-scripts"]
+	path = cmake-scripts
+	url = https://github.com/CometCarlos/cmake-scripts
