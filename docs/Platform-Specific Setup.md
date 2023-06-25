@@ -1,6 +1,6 @@
 # Platform-Specific Setup
 
-## Windows
+## :window: Windows
 ### Installing Development Dependencies
 #### [CMake](https://cmake.org)
 Download and run the installer for [CMake](https://cmake.org/download), and make sure to add CMake to your path for all users.
@@ -21,7 +21,7 @@ Put the ninja.exe file under `C:/Program Files/ninja-win/ninja.exe` (for example
 ---
 
 
-## MacOS
+## :apple: MacOS
 ### Installing Development Dependencies
 #### [CMake](https://cmake.org)
 After downloading the .dmg file from https://cmake.org/download and moving the CMake application under `/Applications`, you'll want to add it to your path with something like the following:
@@ -37,7 +37,7 @@ You should see the CMake version correctly print out, indicating it's been downl
 ---
 
 
-## Linux
+## :penguin: Linux
 ### Installing Development Dependencies
 #### Clang Compiler
 `sudo apt install clang`
@@ -58,3 +58,20 @@ You should see the CMake version correctly print out, indicating it's been downl
 
 #### Building GLFW _(from source files, brought in as a Git submodule)_
 To build GLFW along with this project, follow their [compile guide](https://www.glfw.org/docs/latest/compile_guide.html). To find out if your Linux machine is using the X11 or Wayland windowing system, go to Settings -> About. You should find a field that says "Windowing System", with a value such as X11.
+
+### :strawberry: Raspberry Pi (ARM Linux)
+#### OpenGL
+It seems that regular OpenGL is not available on Raspberry Pi. _(tested on 64-bit Raspberry Pi OS)_
+Instead, the machine should have OpenGL ES (perhaps 2.0). It will take some development effort on this project to support OpenGL ES. Support may be coming soon for this game, depending!
+
+It will take learning how to cross-compile for Linux vs. Raspberry Pi, first, which I haven't learned yet. (Currently I only know how to differentiate between Windows, MacOS, and Linux overall (which includes Raspberry Pi)).
+
+#### X11 vs. Wayland
+If you're on Raspberry Pi, you won't have a "Settings -> About" to check your windowing system (X11 or Wayland).
+Instead, follow the instructions given [here](https://itsfoss.com/check-wayland-or-xorg):
+
+```sh
+echo $XDG_SESSION_TYPE
+```
+
+The command should output either `x11` or `wayland`.
